@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jhulia Araujo | Agendamento</title>
+    <meta name="description" content="Reserve seu horário com Jhulia Araujo | Unhas no bairro Industrial, em Contagem - MG. Escolha os procedimentos, a data e o melhor horário.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="barbearia-pages.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="booking-page">
+
+    <div class="app-container">
+        <!-- Cabeçalho -->
+        <header class="barber-header">
+            <div class="brand-info">
+                <div class="brand-logo-container" style="width: 50px; height: 50px; margin-bottom: 0;">
+                    <img src="logo.jpg.jpg" alt="Jhulia Araujo Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                </div>
+                <div>
+                    <h1>Jhulia Araujo</h1>
+                    <p>Unhas • Contagem</p>
+                </div>
+            </div>
+            <p class="booking-welcome">Acabamento fino e resistente.</p>
+            <a class="booking-home-link" href="index.html"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Página inicial</a>
+        </header>
+
+        <!-- 1. Profissional -->
+        <section class="section">
+            <h2>1. Profissional</h2>
+            <div class="barbers-grid single-pro">
+                <div class="barber-card active" onclick="selecionarProfissional(this, 'Jhulia Araujo', '5531993124575')">
+                    <div class="barber-avatar"><i class="fa-solid fa-hand-sparkles"></i></div>
+                    <h3>Jhulia Araujo</h3>
+                    <span style="font-size: 0.75rem; color: #8C6A70;">Nail Designer</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Seleção de Serviços (Carregados dinamicamente do Painel) -->
+        <section class="section">
+            <h2>2. Escolha os Procedimentos</h2>
+            <div id="lista-servicos-cliente" class="services-grid">
+                <p style="grid-column: 1 / -1; text-align: center; color: #8C6A70; font-size: 0.85rem; padding: 14px;">
+                    Carregando procedimentos disponíveis...
+                </p>
+            </div>
+        </section>
+
+        <!-- Resumo Flutuante Dinâmico -->
+        <div id="resumo-flutuante" style="display: none; background: #FFF7F7; border: 1px solid #B76E79; border-radius: 10px; padding: 12px 15px; margin-bottom: 20px; justify-content: space-between; align-items: center;">
+            <div>
+                <span id="resumo-qtd-servicos" style="font-size: 0.85rem; color: #7D6368; display: block;">Nenhum procedimento selecionado</span>
+                <strong id="resumo-valor-total" style="font-size: 1.1rem; color: #3D262B;">R$ 0,00</strong>
+            </div>
+            <span id="resumo-duracao" style="font-size: 0.8rem; color: #FFFFFF; background: #4A2E35; padding: 5px 10px; border-radius: 6px; font-weight: bold;">0 min</span>
+        </div>
+
+        <!-- 3. Seleção de Data e Horário -->
+        <section class="section">
+            <h2>3. Data e Horário</h2>
+            <p style="font-size: 0.8rem; color: #7D6368; margin: -6px 0 12px 0;">
+                <i class="fa-regular fa-clock"></i> Os horários disponíveis são calculados automaticamente conforme o tempo de duração dos procedimentos escolhidos.
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <div class="input-group" style="width: 100%;">
+                    <label for="date">Data:</label>
+                    <input type="date" id="date" onchange="verificarEAtualizarData()" style="width: 100%; box-sizing: border-box;">
+                </div>
+                <div class="input-group" style="width: 100%;">
+                    <label for="time">Horário de início:</label>
+                    <select id="time" style="width: 100%; box-sizing: border-box;">
+                        <option value="">Selecione o procedimento e a data</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Identificação da Cliente -->
+        <section class="section">
+            <h2>4. Seus Dados</h2>
+            <div class="client-inputs">
+                <div class="input-group">
+                    <label for="client-phone">WhatsApp / Telefone:</label>
+                    <input type="tel" id="client-phone" placeholder="Seu WhatsApp com DDD" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="client-name">Nome Completo:</label>
+                    <input type="text" id="client-name" placeholder="Seu Nome Completo" required>
+                </div>
+            </div>
+        </section>
+
+        <div style="height: 100px; width: 100%;"></div>
+
+        <!-- Botão de Ação -->
+        <footer class="footer-action">
+            <button class="btn-whatsapp" id="btn-continuar" onclick="abrirModalConfirmacao()">
+                Continuar Agendamento <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>
+            </button>
+        </footer>
+    </div>
+
+    <!-- MODAL DE CONFIRMAÇÃO DE AGENDAMENTO -->
+    <div id="modal-confirmacao" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(61, 38, 43, 0.65); display: none; justify-content: center; align-items: center; z-index: 9999;">
+        <div style="background: #FFFFFF; border-radius: 16px; padding: 25px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(61, 38, 43, 0.2);">
+            <h3 style="margin-top: 0; margin-bottom: 15px; font-size: 1.25rem; color: #3D262B;">Confirmar Agendamento</h3>
+            
+            <div id="resumo-agendamento" style="text-align: left; background: #FCF7F6; padding: 15px; border-radius: 10px; border: 1px solid #EEDCDD; margin-bottom: 15px; font-size: 0.92rem; color: #3D262B; line-height: 1.65;">
+            </div>
+            
+            <p style="font-size: 0.84rem; color: #7D6368; margin-bottom: 20px;">
+                Confira os dados acima. Ao confirmar, seu horário será reservado e você será direcionada ao WhatsApp.
+            </p>
+            
+            <div style="display: flex; gap: 10px; flex-direction: column;">
+                <button id="btn-confirmar-envio" onclick="confirmarEEnviar()" style="padding: 14px; border-radius: 10px; font-weight: bold; border: none; background: #25D366; color: #FFF; cursor: pointer; font-size: 1rem;">
+                    <i class="fa-brands fa-whatsapp"></i> Confirmar e Enviar
+                </button>
+                <button onclick="fecharModalConfirmacao()" style="padding: 13px; border-radius: 10px; font-weight: bold; border: 1px solid #E5CECD; background: #FFF; color: #5C4348; cursor: pointer; font-size: 0.95rem;">
+                    Voltar e Editar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        let profissionalSelecionado = "Jhulia Araujo";
+        let whatsappProfissional = "5531993124575";
+        const DIAS_ANTECEDENCIA_MAXIMA = 35;
+        let servicosSelecionadosCliente = {};
+
+        function selecionarProfissional(element, nome, wpp) {
+            document.querySelectorAll('.barber-card').forEach(c => c.classList.remove('active'));
+            element.classList.add('active');
+            profissionalSelecionado = nome;
+            whatsappProfissional = wpp;
+            checkAvailableTimes();
+        }
+
+        function formatarDataLocal(data) {
+            const ano = data.getFullYear();
+            const mes = String(data.getMonth() + 1).padStart(2, "0");
+            const dia = String(data.getDate()).padStart(2, "0");
+            return `${ano}-${mes}-${dia}`;
+        }
+
+        function obterLimitesDatas() {
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+
+            const dataLimite = new Date(hoje);
+            dataLimite.setDate(hoje.getDate() + DIAS_ANTECEDENCIA_MAXIMA);
+
+            return { minDate: hoje, maxDate: dataLimite };
+        }
+
+        async function carregarServicosPublicos() {
+            const container = document.getElementById("lista-servicos-cliente");
+            if (!container) return;
+
+            const { servicos } = await carregarCatalogoEstudio();
+            container.innerHTML = "";
+
+            if (!servicos || servicos.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 18px; background: #FCF7F6; border: 1px dashed #E5C8C7; border-radius: 10px;">
+                        <p style="font-size: 0.86rem; color: #6B4E54; margin-bottom: 10px;">
+                            Nenhum procedimento cadastrado para agendamento online no momento.
+                        </p>
+                        <a href="https://wa.me/${whatsappProfissional}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; background: #B76E79; color: #FFF; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: bold;">
+                            <i class="fa-brands fa-whatsapp"></i> Consultar horários no WhatsApp
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            servicos.forEach(item => {
+                const card = document.createElement("div");
+                card.className = "service-card";
+                card.onclick = () => toggleService(card, item.nome, Number(item.preco), Number(item.duracao));
+                card.innerHTML = `
+                    <div class="service-info">
+                        <h3><i class="fa-regular fa-square checkbox-icon"></i> ${item.nome}</h3>
+                        <span><i class="fa-regular fa-clock"></i> ${item.duracao} min</span>
+                    </div>
+                    <span class="price">R$ ${Number(item.preco).toFixed(2).replace(".", ",")}</span>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            await carregarServicosPublicos();
+
+            const { minDate, maxDate } = obterLimitesDatas();
+            const minDateStr = formatarDataLocal(minDate);
+            const maxDateStr = formatarDataLocal(maxDate);
+
+            const inputData = document.getElementById("date");
+            if (inputData) {
+                inputData.min = minDateStr;
+                inputData.max = maxDateStr;
+                inputData.value = minDateStr;
+                checkAvailableTimes();
+            }
+        });
+
+        function verificarEAtualizarData() {
+            const dataInput = document.getElementById("date").value;
+            if (!dataInput) return;
+
+            const { minDate, maxDate } = obterLimitesDatas();
+            const dataSelecionada = new Date(dataInput + "T00:00:00");
+
+            if (dataSelecionada < minDate || dataSelecionada > maxDate) {
+                alert(`Ops! Só é permitido realizar agendamentos com até ${DIAS_ANTECEDENCIA_MAXIMA} dias de antecedência.`);
+                document.getElementById("date").value = formatarDataLocal(minDate);
+            }
+
+            checkAvailableTimes();
+        }
+
+        function toggleService(element, nomeServico, precoServico, duracaoServico) {
+            const icon = element.querySelector('.checkbox-icon');
+
+            if (servicosSelecionadosCliente[nomeServico]) {
+                delete servicosSelecionadosCliente[nomeServico];
+                element.classList.remove('active');
+                icon.className = 'fa-regular fa-square checkbox-icon';
+            } else {
+                servicosSelecionadosCliente[nomeServico] = { preco: precoServico, duracao: duracaoServico };
+                element.classList.add('active');
+                icon.className = 'fa-solid fa-square-check checkbox-icon';
+            }
+
+            atualizarResumoFlutuanteCliente();
+            checkAvailableTimes();
+        }
+
+        function obterTotaisSelecionados() {
+            const chaves = Object.keys(servicosSelecionadosCliente);
+            let total = 0;
+            let duracaoTotal = 0;
+            chaves.forEach(serv => {
+                total += servicosSelecionadosCliente[serv].preco;
+                duracaoTotal += servicosSelecionadosCliente[serv].duracao;
+            });
+            return { chaves, total, duracaoTotal };
+        }
+
+        function atualizarResumoFlutuanteCliente() {
+            const { chaves, total, duracaoTotal } = obterTotaisSelecionados();
+            const resumoFlutuante = document.getElementById("resumo-flutuante");
+
+            if (chaves.length > 0) {
+                resumoFlutuante.style.display = "flex";
+                document.getElementById("resumo-qtd-servicos").textContent = `${chaves.length} procedimento(s) selecionado(s)`;
+                document.getElementById("resumo-valor-total").textContent = `R$ ${total.toFixed(2).replace(".", ",")}`;
+                document.getElementById("resumo-duracao").textContent = `${duracaoTotal} min`;
+            } else {
+                resumoFlutuante.style.display = "none";
+            }
+        }
+
+        async function checkAvailableTimes() {
+            const dataSel = document.getElementById("date").value;
+            const selectTime = document.getElementById("time");
+            if (!dataSel || !selectTime) return;
+
+            const { chaves, duracaoTotal } = obterTotaisSelecionados();
+            const duracaoNecessaria = duracaoTotal > 0 ? duracaoTotal : 30;
+
+            selectTime.innerHTML = "<option value=''>Carregando horários...</option>";
+            selectTime.disabled = true;
+
+            const horarios = obterHorariosParaData(dataSel);
+            if (horarios.length === 0) {
+                selectTime.innerHTML = "<option value=''>Estúdio fechado neste dia (Dom)</option>";
+                return;
+            }
+
+            if (chaves.length === 0) {
+                selectTime.innerHTML = "<option value=''>Selecione ao menos 1 procedimento acima</option>";
+                return;
+            }
+
+            try {
+                const { data: agendamentos } = await _supabase
+                    .from("jhulia_agendamentos")
+                    .select("horario, duracao_total")
+                    .eq("data", dataSel)
+                    .eq("profissional", profissionalSelecionado)
+                    .neq("status", "cancelado");
+
+                const { data: bloqueios } = await _supabase
+                    .from("jhulia_bloqueios")
+                    .select("horario")
+                    .eq("data", dataSel)
+                    .eq("profissional", profissionalSelecionado);
+
+                const diaTodoBloqueado = (bloqueios || []).some(b => b.horario === 'TODOS');
+                if (diaTodoBloqueado) {
+                    selectTime.innerHTML = "<option value=''>Agenda fechada nesta data</option>";
+                    return;
+                }
+
+                const horariosBloqueados = (bloqueios || []).map(b => String(b.horario).substring(0, 5));
+                const intervalosOcupados = (agendamentos || []).map(ag => {
+                    const ini = horaParaMinutos(String(ag.horario).substring(0, 5));
+                    const dur = Number(ag.duracao_total || 30);
+                    return { inicio: ini, fim: ini + dur };
+                });
+
+                const fimExpedienteMin = obterFimExpedienteMinutos(dataSel);
+
+                selectTime.innerHTML = "";
+                selectTime.disabled = false;
+                selectTime.appendChild(new Option("Selecione um horário", ""));
+
+                const agora = new Date();
+                const hojeIso = formatarDataLocal(agora);
+                const agoraMin = agora.getHours() * 60 + agora.getMinutes();
+
+                horarios.forEach(h => {
+                    const inicioCand = horaParaMinutos(h);
+                    const fimCand = inicioCand + duracaoNecessaria;
+
+                    const isExpirado = (dataSel === hojeIso && inicioCand <= agoraMin);
+                    const excedeExpediente = (fimCand > fimExpedienteMin);
+
+                    // Verifica sobreposição com qualquer agendamento existente
+                    const conflitaAgendamento = intervalosOcupados.some(iv =>
+                        inicioCand < iv.fim && fimCand > iv.inicio
+                    );
+
+                    // Verifica se algum bloco de 30min dentro da duração está bloqueado manualmente
+                    let conflitaBloqueio = false;
+                    for (let m = inicioCand; m < fimCand; m += 30) {
+                        if (horariosBloqueados.includes(minutosParaHora(m))) {
+                            conflitaBloqueio = true;
+                            break;
+                        }
+                    }
+
+                    const opt = document.createElement("option");
+                    opt.value = h;
+
+                    if (isExpirado) {
+                        opt.textContent = `${h} - Horário já passou`;
+                        opt.disabled = true;
+                    } else if (conflitaAgendamento || conflitaBloqueio) {
+                        opt.textContent = `${h} - Indisponível`;
+                        opt.disabled = true;
+                    } else if (excedeExpediente) {
+                        opt.textContent = `${h} - Tempo insuficiente (${duracaoNecessaria} min)`;
+                        opt.disabled = true;
+                    } else {
+                        opt.textContent = `${h} (término previsto às ${minutosParaHora(fimCand)})`;
+                        opt.disabled = false;
+                    }
+
+                    selectTime.appendChild(opt);
+                });
+            } catch (err) {
+                console.error(err);
+                selectTime.innerHTML = "<option value=''>Erro ao carregar horários</option>";
+                selectTime.disabled = true;
+            }
+        }
+
+        function abrirModalConfirmacao() {
+            const dataInput = document.getElementById("date").value;
+            const horario = document.getElementById("time").value;
+            const nome = document.getElementById("client-name").value.trim();
+            const telefone = document.getElementById("client-phone").value.trim();
+            const { chaves, total, duracaoTotal } = obterTotaisSelecionados();
+
+            if (chaves.length === 0) {
+                alert("Selecione ao menos um procedimento.");
+                return;
+            }
+
+            if (!dataInput || !horario || !nome || !telefone) {
+                alert("Por favor, preencha a data, o horário, seu nome e WhatsApp.");
+                return;
+            }
+
+            const { minDate, maxDate } = obterLimitesDatas();
+            const dataSelecionada = new Date(dataInput + "T00:00:00");
+
+            if (dataSelecionada < minDate || dataSelecionada > maxDate) {
+                alert(`Desculpe, só é permitido realizar agendamentos com até ${DIAS_ANTECEDENCIA_MAXIMA} dias de antecedência.`);
+                return;
+            }
+
+            const fimPrevisto = minutosParaHora(horaParaMinutos(horario) + duracaoTotal);
+
+            document.getElementById("resumo-agendamento").innerHTML = `
+                <strong>Profissional:</strong> ${profissionalSelecionado}<br>
+                <strong>Cliente:</strong> ${nome}<br>
+                <strong>WhatsApp:</strong> ${telefone}<br>
+                <strong>Procedimentos:</strong> ${chaves.join(", ")}<br>
+                <strong>Duração estimada:</strong> ${duracaoTotal} min (até ~${fimPrevisto})<br>
+                <strong>Data:</strong> ${dataInput.split("-").reverse().join("/")}<br>
+                <strong>Horário:</strong> ${horario}<br>
+                <strong>Total:</strong> R$ ${total.toFixed(2).replace(".", ",")}
+            `;
+
+            document.getElementById("modal-confirmacao").style.display = "flex";
+        }
+
+        function fecharModalConfirmacao() {
+            document.getElementById("modal-confirmacao").style.display = "none";
+        }
+
+        async function confirmarEEnviar() {
+            const data = document.getElementById("date").value;
+            const horario = document.getElementById("time").value;
+            const nome = document.getElementById("client-name").value.trim();
+            const telefone = document.getElementById("client-phone").value.trim();
+            const { chaves, total, duracaoTotal } = obterTotaisSelecionados();
+
+            try {
+                // Revalida conflito de intervalo no banco antes de gravar
+                const { data: existentes } = await _supabase
+                    .from("jhulia_agendamentos")
+                    .select("horario, duracao_total")
+                    .eq("data", data)
+                    .eq("profissional", profissionalSelecionado)
+                    .neq("status", "cancelado");
+
+                const inicioNovo = horaParaMinutos(horario);
+                const fimNovo = inicioNovo + duracaoTotal;
+
+                const houveConflito = (existentes || []).some(ag => {
+                    const ini = horaParaMinutos(String(ag.horario).substring(0, 5));
+                    const fim = ini + Number(ag.duracao_total || 30);
+                    return inicioNovo < fim && fimNovo > ini;
+                });
+
+                if (houveConflito) {
+                    alert("Desculpe, este horário acabou de ser reservado. Por favor, escolha outro horário disponível.");
+                    fecharModalConfirmacao();
+                    checkAvailableTimes();
+                    return;
+                }
+
+                const { error } = await _supabase.from("jhulia_agendamentos").insert([{
+                    profissional: profissionalSelecionado,
+                    cliente: nome,
+                    telefone: telefone,
+                    servico: chaves.join(", "),
+                    preco_total: total,
+                    duracao_total: duracaoTotal,
+                    data: data,
+                    horario: horario,
+                    status: 'ativo'
+                }]);
+
+                if (error) throw error;
+
+                const textoMensagem =
+                    `Olá Jhulia! Gostaria de confirmar meu agendamento ✨:\n` +
+                    `*Cliente:* ${nome}\n` +
+                    `*Procedimento(s):* ${chaves.join(", ")}\n` +
+                    `*Duração prevista:* ${duracaoTotal} min\n` +
+                    `*Data:* ${data.split("-").reverse().join("/")} às ${horario}\n` +
+                    `*Total:* R$ ${total.toFixed(2).replace(".", ",")}`;
+
+                window.location.href = `https://wa.me/${whatsappProfissional}?text=${encodeURIComponent(textoMensagem)}`;
+            } catch (err) {
+                alert("Erro ao realizar agendamento: " + err.message);
+            }
+        }
+    </script>
+</body>
+</html>

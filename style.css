@@ -1,0 +1,361 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #FDF8F7;
+    color: #3D262B;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 480px;
+    background-color: #FFFFFF;
+    padding: 20px;
+    padding-bottom: 130px;
+    box-shadow: 0 0 30px rgba(183, 110, 121, 0.10);
+    border-left: 1px solid #EEDCDD;
+    border-right: 1px solid #EEDCDD;
+}
+
+/* Cabeçalho Minimalista */
+.barber-header {
+    border-bottom: 1px solid #EEDCDD;
+    padding-bottom: 18px;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.brand-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.brand-logo-container {
+    width: 90px;
+    height: 90px;
+    background: #FFFFFF;
+    border: 2px solid #B76E79;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px auto;
+    overflow: hidden;
+}
+
+.brand-info h1 {
+    font-size: 1.55rem;
+    letter-spacing: 1.2px;
+    color: #3D262B;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.brand-info p {
+    font-size: 0.75rem;
+    color: #8C6A70;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.section {
+    margin-bottom: 25px;
+}
+
+.section h2 {
+    font-size: 1.05rem;
+    margin-bottom: 12px;
+    color: #3D262B;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-left: 3px solid #B76E79;
+    padding-left: 8px;
+}
+
+/* Cards de Profissionais */
+.barbers-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.barbers-grid.single-pro {
+    grid-template-columns: 1fr;
+}
+
+.barber-card {
+    background: #FCF7F6;
+    border: 1px solid #EEDCDD;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.barber-card.active {
+    border-color: #B76E79 !important;
+    background: #F9ECEB !important;
+}
+
+.barber-avatar {
+    font-size: 1.5rem;
+    color: #B76E79;
+    margin-bottom: 8px;
+}
+
+.barber-card h3 {
+    font-size: 1rem;
+    color: #3D262B;
+    font-weight: 600;
+}
+
+/* Grade de Serviços */
+.services-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.service-card {
+    background: #FCF7F6;
+    border: 1px solid #EEDCDD;
+    border-radius: 10px;
+    padding: 12px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    cursor: pointer;
+    transition: 0.2s;
+    gap: 8px;
+}
+
+.service-card.active {
+    border-color: #B76E79 !important;
+    background: #F9ECEB !important;
+}
+
+.service-info {
+    width: 100%;
+}
+
+.service-info h3 {
+    font-size: 0.85rem;
+    margin-bottom: 3px;
+    color: #3D262B;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    line-height: 1.3;
+}
+
+.service-info span {
+    font-size: 0.76rem;
+    color: #8C6A70;
+    display: block;
+    padding-left: 20px;
+}
+
+.price {
+    font-weight: bold;
+    color: #8A4651;
+    font-size: 0.85rem;
+    background: #F7E8E7;
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid #E8CECD;
+    width: 100%;
+    text-align: center;
+    margin-top: auto;
+}
+
+/* Inputs */
+.datetime-inputs, .client-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.input-group label {
+    font-size: 0.85rem;
+    color: #6B4E54;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    background: #FCF7F6;
+    border: 1px solid #E5CECD;
+    border-radius: 8px;
+    color: #3D262B;
+    font-size: 1rem;
+    outline: none;
+    transition: 0.2s;
+}
+
+input:focus, select:focus {
+    border-color: #B76E79;
+    background: #FFFFFF;
+}
+
+/* Rodapé Fixo com Botão */
+.footer-action {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    padding: 15px 20px;
+    background: #FFFFFF;
+    border-top: 1px solid #EEDCDD;
+    z-index: 99;
+}
+
+.btn-whatsapp {
+    width: 100%;
+    padding: 15px;
+    background-color: #B76E79;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    transition: 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-whatsapp:hover {
+    background-color: #9E5863;
+}
+
+/* Estilos específicos para a Landing Page */
+.landing-container {
+    text-align: center;
+    padding-bottom: 40px;
+}
+
+.landing-header {
+    padding: 30px 0 20px 0;
+    border-bottom: 1px solid #EEDCDD;
+    margin-bottom: 25px;
+}
+
+.landing-header h1 {
+    font-size: 1.8rem;
+    color: #3D262B;
+    margin-bottom: 5px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.tagline {
+    font-size: 0.8rem;
+    color: #8C6A70;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+.about-section {
+    text-align: left;
+    background: #FCF7F6;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #EEDCDD;
+}
+
+.about-section p {
+    font-size: 0.9rem;
+    color: #5C4348;
+    line-height: 1.5;
+}
+
+.info-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+.info-card {
+    background: #FCF7F6;
+    padding: 12px 15px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    text-align: left;
+    border: 1px solid #EEDCDD;
+}
+
+.info-card i {
+    font-size: 1.4rem;
+    color: #B76E79;
+}
+
+.info-card h3 {
+    font-size: 0.95rem;
+    color: #3D262B;
+    margin-bottom: 3px;
+}
+
+.info-card p {
+    font-size: 0.8rem;
+    color: #7D6368;
+}
+
+.landing-action {
+    margin-top: 20px;
+}
+
+.btn-primary-action {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 16px;
+    background-color: #B76E79;
+    color: #FFFFFF;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: 0.2s;
+}
+
+.btn-primary-action:hover {
+    background-color: #9E5863;
+}
+
+.landing-footer {
+    margin-top: 30px;
+    font-size: 0.75rem;
+    color: #9C8085;
+}

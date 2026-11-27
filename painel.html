@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>Agenda Pro • Jhulia Araujo Unhas</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Jhulia Araujo">
+    <link rel="apple-touch-icon" href="logoindex.jpg">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #FDF8F7; color: #3D262B; display: flex; justify-content: center; min-height: 100vh; }
+        .app-container { width: 100%; max-width: 100%; background-color: #FFFFFF; padding: 10px; padding-bottom: 90px; box-shadow: 0 0 25px rgba(183, 110, 121, 0.08); }
+        
+        .barber-header { border-bottom: 1px solid #EEDCDD; padding-bottom: 10px; margin-bottom: 12px; text-align: center; }
+        .brand-logo-container { width: 68px; height: 68px; background: #FFFFFF; border: 2px solid #B76E79; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 6px auto; overflow: hidden; }
+        .brand-logo-container img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+        .barber-header h1 { font-size: 1.1rem; color: #3D262B; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .barber-header p { font-size: 0.7rem; color: #8C6A70; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 500; }
+        
+        #login-section { min-height: 55vh; display: flex; flex-direction: column; justify-content: center; max-width: 400px; margin: 0 auto; padding: 0 15px; }
+        
+        .custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(61, 38, 43, 0.6); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; visibility: hidden; transition: 0.2s ease-in-out; }
+        .custom-modal-overlay.active { opacity: 1; visibility: visible; }
+        .custom-modal { background: #FFFFFF; border: 1px solid #EEDCDD; border-radius: 14px; padding: 20px; width: 92%; max-width: 440px; text-align: center; box-shadow: 0 12px 35px rgba(61, 38, 43, 0.16); max-height: 90vh; overflow-y: auto; }
+        .custom-modal h3 { color: #3D262B; font-size: 1rem; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.8px; }
+        .custom-modal p { color: #6B4E54; font-size: 0.85rem; margin-bottom: 15px; line-height: 1.4; text-align: left; }
+        .custom-modal input, .custom-modal select { width: 100%; padding: 10px; background: #FCF7F6; border: 1px solid #E5CECD; border-radius: 8px; color: #3D262B; font-size: 0.92rem; margin-bottom: 10px; outline: none; }
+        .custom-modal input:focus, .custom-modal select:focus { border-color: #B76E79; background: #FFFFFF; }
+        
+        .custom-modal-buttons { display: flex; gap: 8px; flex-direction: column; }
+        .custom-modal-btn { width: 100%; padding: 11px; border-radius: 8px; font-size: 0.82rem; font-weight: bold; cursor: pointer; border: none; text-transform: uppercase; }
+        .btn-modal-cancelar { background: #F5EAE9; color: #5C4348; border: 1px solid #E5CECD; }
+        .btn-modal-confirmar { background: #4A2E35; color: #FFFFFF; }
+        .btn-modal-atendido { background: #25D366; color: #FFFFFF; }
+        .btn-modal-editar { background: #B76E79; color: #FFFFFF; }
+        .btn-modal-excluir { background: #FFF5F5; color: #D9534F; border: 1px solid #E7A19E; }
+
+        .week-horizontal-container { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 8px; width: 100%; overflow-x: hidden; }
+        .day-column { background: #FCF7F6; border: 1px solid #EEDCDD; border-radius: 6px; padding: 4px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+        .day-header { font-size: 0.64rem; color: #3D262B; font-weight: bold; border-bottom: 1px solid #EEDCDD; padding-bottom: 4px; display: flex; flex-direction: column; gap: 3px; text-align: center; }
+        
+        .slot-item { background: #FFFFFF; padding: 4px 4px; border-radius: 4px; font-size: 0.62rem; display: flex; flex-direction: column; gap: 1px; border: 1px solid #EEDCDD; border-left: 3px solid #D8BFC0; color: #3D262B; cursor: pointer; transition: 0.15s; overflow: hidden; }
+        .slot-item:hover { opacity: 0.88; }
+        .slot-item.booked { border-left-color: #B76E79; background: #FDF2F2; }
+        .slot-item.continuation { border-left-color: #D89A9E; background: #FAF3F3; opacity: 0.85; }
+        .slot-item.concluded { border-left-color: #25D366; background: #F0FFF4; }
+        .slot-item.mensalista { border-left-color: #9B59B6; background: rgba(155, 89, 182, 0.08); }
+        .slot-item.blocked { border-left-color: #D9534F; background: #FFF5F5; }
+        .slot-item.available { border-left-color: #C8A2A8; background: #FFFFFF; }
+
+        .datetime-inputs { display: flex; flex-direction: column; gap: 12px; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .input-group label { font-size: 0.85rem; color: #6B4E54; font-weight: 600; }
+        input, select { width: 100%; padding: 12px; background: #FCF7F6; border: 1px solid #E5CECD; border-radius: 8px; color: #3D262B; font-size: 1rem; outline: none; transition: 0.2s; }
+        input:focus, select:focus { border-color: #B76E79; background: #FFFFFF; }
+        
+        .btn-whatsapp { width: 100%; padding: 10px; background-color: #B76E79; color: #FFFFFF; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 6px; transition: 0.2s; text-transform: uppercase; }
+        .btn-whatsapp:hover { background-color: #9E5863; }
+
+        .servicos-selector-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; max-height: 160px; overflow-y: auto; background: #FCF7F6; padding: 6px; border-radius: 8px; border: 1px solid #EEDCDD; }
+        .servico-pill { background: #FFFFFF; border: 1px solid #E5CECD; border-radius: 8px; padding: 7px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; gap: 2px; text-align: left; }
+        .servico-pill.selected { background: #F9ECEB; border-color: #B76E79; }
+        .servico-pill span.nome { font-size: 0.72rem; color: #3D262B; font-weight: 600; }
+        .servico-pill span.valor { font-size: 0.66rem; color: #8A4651; font-weight: bold; }
+
+        .catalogo-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+        .catalogo-tab-btn { padding: 9px; border-radius: 8px; border: 1px solid #E5CECD; background: #FCF7F6; color: #6B4E54; font-weight: bold; font-size: 0.8rem; cursor: pointer; text-transform: uppercase; }
+        .catalogo-tab-btn.active { background: #B76E79; color: #FFFFFF; border-color: #B76E79; }
+        .catalogo-item-row { background: #FCF7F6; border: 1px solid #EEDCDD; border-radius: 8px; padding: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; text-align: left; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <header class="barber-header">
+            <div class="brand-logo-container">
+                <img src="logoindex.jpg" 
+                     onerror="this.onerror=null; this.src='logoindex.jpeg';" 
+                     alt="Logo Jhulia Araujo Unhas">
+            </div>
+            <div>
+                <h1>Jhulia Araujo • Unhas</h1>
+                <p id="painel-subtitulo">Painel de Gerenciamento</p>
+            </div>
+        </header>
+
+        <!-- Sessão de Login -->
+        <section id="login-section" class="section">
+            <h2 style="border-left: 3px solid #B76E79; padding-left: 8px; font-size: 1rem; margin-bottom: 14px; text-transform: uppercase; color: #3D262B;">Acesso ao Painel</h2>
+            <div class="datetime-inputs">
+                <div class="input-group">
+                    <label for="login-usuario">Login:</label>
+                    <input type="text" id="login-usuario" placeholder="Digite seu usuário">
+                </div>
+                <div class="input-group">
+                    <label for="login-senha">Senha:</label>
+                    <input type="password" id="login-senha" placeholder="Digite sua senha">
+                </div>
+                <button class="btn-whatsapp" onclick="fazerLogin()" style="padding: 14px; margin-top: 5px; background: #4A2E35;">ENTRAR</button>
+            </div>
+        </section>
+
+        <!-- Dashboard Estúdio -->
+        <section id="dashboard-barbeiro" class="section" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 6px;">
+                <h2 id="titulo-agenda-barbeiro" style="font-size: 0.88rem; text-transform: uppercase; color: #3D262B;">Minha Agenda</h2>
+                <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                    <button onclick="abrirModalAgendamentoManual()" class="btn-whatsapp" style="width: auto; padding: 6px 10px; font-size: 0.68rem; background: #B76E79; color: #FFF;" title="Novo Agendamento ou Encaixe">
+                        <i class="fa-solid fa-plus"></i> Novo
+                    </button>
+                    <button onclick="abrirModalCatalogo()" class="btn-whatsapp" style="width: auto; padding: 6px 10px; font-size: 0.68rem; background: #4A2E35; color: #FFF;" title="Cadastrar Serviços e Produtos">
+                        <i class="fa-solid fa-sparkles"></i> Serviços e Produtos
+                    </button>
+                    <button onclick="abrirModalMensalista()" class="btn-whatsapp" style="width: auto; padding: 6px 10px; font-size: 0.68rem; background: #9B59B6; color: #FFF;" title="Gerenciar Clientes Fixas">
+                        <i class="fa-solid fa-star"></i> Fixas
+                    </button>
+                    <button onclick="carregarAgendaSemanal()" class="btn-whatsapp" style="width: auto; padding: 6px 9px; font-size: 0.68rem; background: #FAF0EF; color: #8A4651; border: 1px solid #E5CECD;">
+                        <i class="fa-solid fa-rotate"></i>
+                    </button>
+                    <button onclick="fazerLogout()" class="btn-whatsapp" style="width: auto; padding: 6px 9px; font-size: 0.68rem; background: #FFF5F5; color: #D9534F; border: 1px solid #E7A19E;">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Resumo da Semana -->
+            <div style="background: #FFFFFF; border: 1px solid #EEDCDD; padding: 10px; border-radius: 10px; margin-bottom: 10px;">
+                <div style="font-weight: bold; color: #3D262B; text-transform: uppercase; margin-bottom: 6px; text-align: center; font-size: 0.75rem;">Resumo da Semana</div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; font-size: 0.75rem; text-align: center;">
+                    <div style="background: #FCF7F6; border: 1px solid #EEDCDD; padding: 7px; border-radius: 8px;">
+                        <span style="color: #8C6A70; display: block; font-size: 0.62rem;">Concluídos</span>
+                        <strong id="barber-total-atendidos" style="font-size: 0.95rem; color: #3D262B;">0</strong>
+                    </div>
+                    <div style="background: #FCF7F6; border: 1px solid #EEDCDD; padding: 7px; border-radius: 8px;">
+                        <span style="color: #8C6A70; display: block; font-size: 0.62rem;">Encaixes</span>
+                        <strong id="barber-total-encaixes" style="font-size: 0.95rem; color: #B76E79;">0</strong>
+                    </div>
+                    <div style="background: #FCF7F6; border: 1px solid #EEDCDD; padding: 7px; border-radius: 8px;">
+                        <span style="color: #8C6A70; display: block; font-size: 0.62rem;">Faturamento</span>
+                        <strong id="barber-total-faturamento" style="font-size: 0.95rem; color: #25D366;">R$ 0,00</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: #FCF7F6; border: 1px solid #EEDCDD; padding: 8px; border-radius: 10px; margin-bottom: 10px; text-align: center;">
+                <div style="font-size: 0.6rem; color: #8C6A70; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">Período da Agenda</div>
+                <span id="label-periodo-semana" style="font-weight: bold; color: #3D262B; font-size: 0.76rem; display: block; margin-bottom: 6px;"></span>
+                <div style="display: flex; justify-content: space-between; gap: 6px;">
+                    <button onclick="mudarSemana(-1)" class="btn-whatsapp" style="flex: 1; padding: 5px; font-size: 0.66rem; border: 1px solid #E5CECD; background: #FFFFFF; color: #3D262B;">
+                        <i class="fa-solid fa-chevron-left"></i> Anterior
+                    </button>
+                    <button onclick="mudarSemana(1)" class="btn-whatsapp" style="flex: 1; padding: 5px; font-size: 0.66rem; border: 1px solid #E5CECD; background: #FFFFFF; color: #3D262B;">
+                        Próxima <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <h3 style="font-size: 0.75rem; margin-bottom: 4px; color: #3D262B; text-align: center; text-transform: uppercase;">Visão Geral da Semana</h3>
+            <div id="grade-semanal-container" class="week-horizontal-container"></div>
+        </section>
+
+        <!-- Dashboard Admin -->
+        <section id="dashboard-admin" class="section" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2 style="font-size: 1rem;">Resumo Administrativo</h2>
+                <button onclick="fazerLogout()" class="btn-whatsapp" style="width: auto; padding: 6px 12px; font-size: 0.8rem; background: #FFF5F5; color: #D9534F; border: 1px solid #E7A19E;"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+            <div class="input-group" style="margin-bottom: 15px;">
+                <label for="filter-date-admin">Selecionar Data:</label>
+                <input type="date" id="filter-date-admin" onchange="carregarResumoAdmin()">
+            </div>
+            <div id="agendamentos-list-admin" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </section>
+
+    </div>
+
+    <!-- MODAL DE CADASTRO DE SERVIÇOS E PRODUTOS -->
+    <div id="modal-catalogo" class="custom-modal-overlay">
+        <div class="custom-modal" style="max-width: 470px;">
+            <h3><i class="fa-solid fa-sparkles" style="color: #B76E79;"></i> Serviços e Produtos</h3>
+            
+            <div class="catalogo-tabs">
+                <button id="tab-cat-servico" class="catalogo-tab-btn active" onclick="alternarAbaCatalogo('servico')">
+                    <i class="fa-solid fa-hand-sparkles"></i> Serviços
+                </button>
+                <button id="tab-cat-produto" class="catalogo-tab-btn" onclick="alternarAbaCatalogo('produto')">
+                    <i class="fa-solid fa-bag-shopping"></i> Produtos
+                </button>
+            </div>
+
+            <form onsubmit="salvarItemCatalogo(event)" style="text-align: left; background: #FCF7F6; padding: 12px; border-radius: 10px; border: 1px solid #EEDCDD; margin-bottom: 14px;">
+                <input type="hidden" id="catalogo-edit-id" value="">
+                <input type="hidden" id="catalogo-tipo" value="servico">
+
+                <label id="label-catalogo-nome" style="font-size: 0.78rem; color: #5C4348; font-weight: bold;">Nome do Procedimento / Serviço:</label>
+                <input type="text" id="catalogo-nome" placeholder="Ex: Alongamento em Fibra de Vidro" required>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <div>
+                        <label style="font-size: 0.78rem; color: #5C4348; font-weight: bold;">Valor (R$):</label>
+                        <input type="number" id="catalogo-preco" step="0.01" min="0" placeholder="Ex: 130.00" required>
+                    </div>
+                    <div id="grupo-catalogo-duracao">
+                        <label style="font-size: 0.78rem; color: #5C4348; font-weight: bold;">Tempo (minutos):</label>
+                        <input type="number" id="catalogo-duracao" step="15" min="15" max="480" value="60" placeholder="Ex: 90" required>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 8px; margin-top: 4px;">
+                    <button type="submit" id="btn-salvar-catalogo" class="custom-modal-btn btn-modal-editar" style="flex: 1;">
+                        <i class="fa-solid fa-check"></i> Cadastrar
+                    </button>
+                    <button type="button" id="btn-cancelar-edicao-catalogo" onclick="resetarFormCatalogo()" class="custom-modal-btn btn-modal-cancelar" style="display: none; width: auto; padding: 0 14px;">
+                        Cancelar Edição
+                    </button>
+                </div>
+            </form>
+
+            <div id="lista-catalogo-container" style="max-height: 230px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px;">
+                <!-- Itens carregados via JS -->
+            </div>
+
+            <button class="custom-modal-btn btn-modal-cancelar" onclick="fecharModalCatalogo()">Fechar</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE GERENCIAMENTO DE CLIENTES FIXAS / MENSALISTAS -->
+    <div id="modal-gerenciar-mensalistas" class="custom-modal-overlay">
+        <div class="custom-modal" style="max-width: 440px;">
+            <h3><i class="fa-solid fa-star" style="color: #9B59B6;"></i> Clientes Fixas (Manutenção)</h3>
+            
+            <button onclick="abrirFormNovoMensalista()" class="btn-whatsapp" style="background: #4A2E35; color: #FFFFFF; margin-bottom: 15px; padding: 12px;">
+                <i class="fa-solid fa-plus"></i> Cadastrar Cliente Fixa
+            </button>
+
+            <div id="lista-mensalistas-container" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px;">
+                <!-- Preenchido via JS -->
+            </div>
+
+            <button class="custom-modal-btn btn-modal-cancelar" onclick="fecharModalMensalistas()">Fechar</button>
+        </div>
+    </div>
+
+    <!-- Modais de Atendimento -->
+    <div id="custom-action-modal" class="custom-modal-overlay">
+        <div class="custom-modal">
+            <h3>Gerenciar Atendimento</h3>
+            <div id="action-modal-details" style="text-align: left; background: #FCF7F6; padding: 10px; border-radius: 8px; border: 1px solid #EEDCDD; margin-bottom: 12px; font-size: 0.85rem; color: #3D262B;"></div>
+            
+            <div id="payment-box" style="display: none; text-align: left; margin-bottom: 12px;">
+                <label style="font-size: 0.8rem; font-weight: bold; display: block; margin-bottom: 4px;">Adicionar Procedimentos Extras:</label>
+                <div id="extras-servicos-container"></div>
+
+                <div style="background: #FCF7F6; border: 1px solid #EEDCDD; padding: 8px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.8rem; font-weight: bold;">Valor Total Atualizado:</span>
+                    <strong id="valor-total-atualizado" style="color: #25D366; font-size: 1rem;">R$ 0,00</strong>
+                </div>
+
+                <label style="font-size: 0.8rem; font-weight: bold; display: block; margin-bottom: 4px;">Forma de Pagamento:</label>
+                <select id="select-forma-pagamento">
+                    <option value="Pix">Pix</option>
+                    <option value="Dinheiro">Dinheiro</option>
+                    <option value="Débito">Débito</option>
+                    <option value="Crédito">Crédito</option>
+                </select>
+            </div>
+
+            <div id="reschedule-box" style="display: none; text-align: left; margin-bottom: 12px;">
+                <label style="font-size: 0.8rem; font-weight: bold; display: block; margin-bottom: 4px;">Nova Data:</label>
+                <input type="date" id="new-reschedule-date">
+                <label style="font-size: 0.8rem; font-weight: bold; display: block; margin-bottom: 4px;">Novo Horário:</label>
+                <input type="time" id="new-reschedule-time" value="10:00">
+            </div>
+
+            <div class="custom-modal-buttons" id="action-modal-buttons"></div>
+        </div>
+    </div>
+
+    <!-- Modal de Agendamento Manual / Cliente Fixa -->
+    <div id="modal-agendamento-manual" class="custom-modal-overlay">
+        <div class="custom-modal">
+            <h3 id="titulo-modal-manual">Novo Agendamento</h3>
+            <div style="text-align: left;">
+                <label style="font-size: 0.75rem; color: #6B4E54; font-weight: bold;">Nome da Cliente:</label>
+                <input type="text" id="manual-cliente" placeholder="Nome da Cliente">
+
+                <label style="font-size: 0.75rem; color: #6B4E54; font-weight: bold;">Telefone / WhatsApp:</label>
+                <input type="text" id="manual-telefone" placeholder="31999999999">
+
+                <label style="font-size: 0.75rem; color: #6B4E54; font-weight: bold;">Procedimentos:</label>
+                <div id="manual-servicos-container"></div>
+
+                <!-- Bloco exclusivo de recorrência para Cliente Fixa -->
+                <div id="bloco-mensalista-opcoes" style="display: none; margin-bottom: 10px; background: #FAF5FF; padding: 10px; border-radius: 8px; border: 1px solid #9B59B6;">
+                    <div class="input-group" style="margin-bottom: 8px;">
+                        <label style="font-size: 0.8rem; color: #9B59B6; font-weight: bold; display: block; margin-bottom: 4px;">Duração (Meses):</label>
+                        <input type="number" id="manual-duracao-meses" value="1" min="1" max="12" style="background: #FFF;">
+                    </div>
+                    <div class="input-group">
+                        <label style="font-size: 0.8rem; color: #9B59B6; font-weight: bold; display: block; margin-bottom: 4px;">Frequência de Manutenção:</label>
+                        <select id="manual-frequencia" style="background: #FFF; padding: 10px;">
+                            <option value="2">A cada 15 dias (2x ao mês)</option>
+                            <option value="4">A cada 7 dias (4x ao mês)</option>
+                            <option value="3">A cada 21 dias (Manutenção alongamento)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="bloco-encaixe-check">
+                    <label for="manual-encaixe" style="margin-bottom: 12px; background: #FCF7F6; padding: 10px; border-radius: 8px; border: 1px solid #B76E79; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="manual-encaixe" style="width: 18px; height: 18px; accent-color: #B76E79; cursor: pointer;" onchange="alternarModoEncaixe()">
+                        <div>
+                            <span style="font-size: 0.8rem; color: #3D262B; font-weight: bold; display: block;">Modo Encaixe</span>
+                            <span style="font-size: 0.68rem; color: #7D6368; display: block;">Permite inserir em qualquer horário sem conflitos.</span>
+                        </div>
+                    </label>
+                </div>
+
+                <label style="font-size: 0.75rem; color: #6B4E54; font-weight: bold;">Data:</label>
+                <input type="date" id="manual-data" onchange="atualizarHorariosManuaisDisponiveis()">
+
+                <label style="font-size: 0.75rem; color: #6B4E54; font-weight: bold;" id="label-horario-manual">Horário:</label>
+                <div id="container-input-horario">
+                    <select id="manual-horario">
+                        <option value="">Selecione a data primeiro</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="custom-modal-buttons" style="margin-top: 10px;">
+                <button class="custom-modal-btn btn-modal-confirmar" onclick="salvarAgendamentoManual(event)">Salvar</button>
+                <button class="custom-modal-btn btn-modal-cancelar" onclick="fecharModalAgendamentoManual()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Ação -->
+    <div id="modal-confirmacao-acao" class="custom-modal-overlay" style="z-index: 10001;">
+        <div class="custom-modal" style="max-width: 320px;">
+            <h3 style="margin-bottom: 12px; font-size: 1.1rem; color: #D9534F;"><i class="fa-solid fa-triangle-exclamation"></i> Atenção</h3>
+            <p id="confirmacao-mensagem" style="color: #3D262B; font-size: 0.90rem; margin-bottom: 20px; text-align: center;"></p>
+            <div style="display: flex; gap: 8px; flex-direction: column;">
+                <button id="btn-confirmar-acao" class="custom-modal-btn btn-modal-excluir">Confirmar Exclusão</button>
+                <button class="custom-modal-btn btn-modal-cancelar" onclick="fecharModalConfirmacaoAcao()">Voltar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerta Genérico -->
+    <div id="modal-alerta" class="custom-modal-overlay" style="z-index: 10000;">
+        <div class="custom-modal" style="max-width: 320px;">
+            <h3 id="alerta-titulo" style="margin-bottom: 12px; font-size: 1.1rem;">Aviso</h3>
+            <p id="alerta-mensagem" style="color: #3D262B; font-size: 0.90rem; margin-bottom: 20px; text-align: center;"></p>
+            <button class="custom-modal-btn btn-modal-confirmar" onclick="fecharAlerta()">OK</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
