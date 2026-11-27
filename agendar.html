@@ -17,7 +17,10 @@
         <header class="barber-header">
             <div class="brand-info">
                 <div class="brand-logo-container" style="width: 50px; height: 50px; margin-bottom: 0;">
-                    <img src="logo.jpg.jpg" alt="Jhulia Araujo Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    <img src="logoindex.jpg" 
+                         onerror="this.onerror=null; this.src='logoindex.jpeg';" 
+                         alt="Jhulia Araujo Logo" 
+                         style="width: 100%; height: 100%; object-fit: cover; object-position: center 20%; border-radius: 50%;">
                 </div>
                 <div>
                     <h1>Jhulia Araujo</h1>
@@ -173,7 +176,7 @@
                         <p style="font-size: 0.86rem; color: #6B4E54; margin-bottom: 10px;">
                             Nenhum procedimento cadastrado para agendamento online no momento.
                         </p>
-                        <a href="https://wa.me/${whatsappProfissional}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; background: #B76E79; color: #FFF; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: bold;">
+                        <a href="https://api.whatsapp.com/send?phone=${whatsappProfissional}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; background: #B76E79; color: #FFF; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: bold;">
                             <i class="fa-brands fa-whatsapp"></i> Consultar horários no WhatsApp
                         </a>
                     </div>
@@ -335,12 +338,10 @@
                     const isExpirado = (dataSel === hojeIso && inicioCand <= agoraMin);
                     const excedeExpediente = (fimCand > fimExpedienteMin);
 
-                    // Verifica sobreposição com qualquer agendamento existente
                     const conflitaAgendamento = intervalosOcupados.some(iv =>
                         inicioCand < iv.fim && fimCand > iv.inicio
                     );
 
-                    // Verifica se algum bloco de 30min dentro da duração está bloqueado manualmente
                     let conflitaBloqueio = false;
                     for (let m = inicioCand; m < fimCand; m += 30) {
                         if (horariosBloqueados.includes(minutosParaHora(m))) {
@@ -428,7 +429,6 @@
             const { chaves, total, duracaoTotal } = obterTotaisSelecionados();
 
             try {
-                // Revalida conflito de intervalo no banco antes de gravar
                 const { data: existentes } = await _supabase
                     .from("jhulia_agendamentos")
                     .select("horario, duracao_total")
@@ -467,14 +467,14 @@
                 if (error) throw error;
 
                 const textoMensagem =
-                    `Olá Jhulia! Gostaria de confirmar meu agendamento ✨:\n` +
+                    `Olá Jhulia! Gostaria de confirmar meu agendamento \u2728\n\n` +
                     `*Cliente:* ${nome}\n` +
-                    `*Procedimento(s):* ${chaves.join(", ")}\n` +
-                    `*Duração prevista:* ${duracaoTotal} min\n` +
-                    `*Data:* ${data.split("-").reverse().join("/")} às ${horario}\n` +
-                    `*Total:* R$ ${total.toFixed(2).replace(".", ",")}`;
+                    `\uD83D\uDC85 *Procedimento(s):* ${chaves.join(", ")}\n` +
+                    `\u23F0 *Duração prevista:* ${duracaoTotal} min\n` +
+                    `\uD83D\uDCC5 *Data:* ${data.split("-").reverse().join("/")} às ${horario}\n` +
+                    `\uD83D\uDCB3 *Total:* R$ ${total.toFixed(2).replace(".", ",")}`;
 
-                window.location.href = `https://wa.me/${whatsappProfissional}?text=${encodeURIComponent(textoMensagem)}`;
+                window.location.href = `https://api.whatsapp.com/send?phone=${whatsappProfissional}&text=${encodeURIComponent(textoMensagem)}`;
             } catch (err) {
                 alert("Erro ao realizar agendamento: " + err.message);
             }
