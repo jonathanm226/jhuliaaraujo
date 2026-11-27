@@ -826,15 +826,15 @@ function enviarLembreteClienteWhatsApp(agendamento) {
     const horaFormatada = String(agendamento.horario).substring(0, 5);
 
     const textoLembrete = encodeURIComponent(
-        `Olá ${agendamento.cliente}! Tudo bem? ✨\n\n` +
+        `Olá ${agendamento.cliente}! Tudo bem? \u2728\n\n` +
         `Passando para lembrar do seu horário agendado no estúdio *Jhulia Araujo | Unhas*:\n` +
-        `📅 *Data:* ${dataFormatada}\n` +
-        `⏰ *Horário:* ${horaFormatada}\n` +
-        `💅 *Procedimento(s):* ${agendamento.servico}\n\n` +
+        `\uD83D\uDCC5 *Data:* ${dataFormatada}\n` +
+        `\u23F0 *Horário:* ${horaFormatada}\n` +
+        `\uD83D\uDC85 *Procedimento(s):* ${agendamento.servico}\n\n` +
         `Qualquer imprevisto, por favor me avise com antecedência. Te aguardo!`
     );
 
-    window.open(`https://wa.me/${telFinal}?text=${textoLembrete}`, "_blank");
+    window.open(`https://api.whatsapp.com/send?phone=${telFinal}&text=${textoLembrete}`, "_blank");
 }
 
 async function abrirGerenciadorAgendamento(id) {
